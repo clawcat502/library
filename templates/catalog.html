@@ -1,0 +1,773 @@
+{% extends "base.html" %}
+
+{% block title %}Каталог книг - Школьная библиотека{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="catalog-header">
+        <h1 class="page-title">Каталог книг</h1>
+        <p class="page-subtitle">Найдите свою следующую любимую книгу</p>
+    </div>
+
+    <!-- Фильтры и поиск -->
+    <div class="catalog-filters">
+        <form method="GET" class="filter-form">
+            <div class="filter-group">
+                <div class="search-box">
+                    <input type="text" 
+                           name="search" 
+                           placeholder="Поиск по названию или автору..." 
+                           value="{{ search_query }}"
+                           class="search-input">
+                    <button type="submit" class="search-btn">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="filter-group">
+                <select name="theme" onchange="this.form.submit()" class="genre-select">
+                    <option value="">Все темы</option>
+                    {% for theme in themes %}
+                    <option value="{{ theme }}" {% if theme == selected_theme %}selected{% endif %}>
+                        {{ theme }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <a href="{{ url_for('catalog') }}" class="btn-reset">Сбросить фильтры</a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Результаты поиска -->
+    <div class="results-info">
+        <p>Найдено книг: <strong>{{ books|length }}</strong></p>
+        {% if search_query %}
+        <p>По запросу: "{{ search_query }}"</p>
+        {% endif %}
+        {% if selected_theme %}
+        <p>Тема: {{ selected_theme }}</p>
+        {% endif %}
+    </div>
+
+    <!-- Сетка книг -->
+    {% if books %}
+    <div class="books-grid">
+        {% for book in books %}
+        <div class="book-card animate-slide-up">
+            <div class="book-cover">
+                <i class="fas fa-book"></i>
+                
+                <!-- Индикатор статуса книги для админа -->
+                {% if user and user.username == 'admin' %}
+                <div class="book-status-indicator {{ 'status-available' if book.available else 'status-unavailable' }}">
+                    <i class="fas fa-{{ 'check-circle' if book.available else 'times-circle' }}"></i>
+                    <span>{{ 'Доступна' if book.available else 'На руках' }}</span>
+                </div>
+                {% endif %}
+                
+                <!-- Индикатор чтения для обычных пользователей -->
+                {% if user and user.username != 'admin' and book.id in user_reading %}
+                <div class="reading-badge-corner">
+                    <i class="fas fa-book-open"></i>
+                </div>
+                {% endif %}
+                
+                <!-- Затемнение для недоступных книг -->
+                {% if not book.available %}
+                <div class="book-overlay">
+                    <span class="borrowed-label">На руках</span>
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="book-info">
+                <h3 class="book-title">{{ book.title }}</h3>
+                <p class="book-author">
+                    <i class="fas fa-user-edit"></i>
+                    {{ book.author }}
+                </p>
+                <div class="book-themes">
+                    <i class="fas fa-tags"></i>
+                    {% for theme in book.theme %}
+                        <span class="theme-tag">{{ theme }}</span>
+                    {% endfor %}
+                    
+                    <!-- Текстовый индикатор чтения для обычных пользователей -->
+                    {% if user and user.username != 'admin' and book.id in user_reading %}
+                    <span class="reading-badge-text">
+                        <i class="fas fa-book-open"></i> Читаю
+                    </span>
+                    {% endif %}
+                </div>
+                <p class="book-year">
+                    <i class="fas fa-calendar"></i>
+                    {{ book.year }} год
+                </p>
+                
+                <!-- Статус книги для всех -->
+                <div class="book-availability {{ 'available' if book.available else 'not-available' }}">
+                    <i class="fas fa-{{ 'check' if book.available else 'times' }}"></i>
+                    {{ 'Доступна' if book.available else 'На руках' }}
+                </div>
+                
+                <!-- КНОПКИ ДЕЙСТВИЙ -->
+                <div class="book-actions">
+                    <!-- Кнопка подробнее для всех -->
+                    <a href="{{ url_for('book_detail', book_id=book.id) }}" class="btn-details">
+                        <i class="fas fa-info-circle"></i>
+                        Подробнее
+                    </a>
+                    
+                    <!-- КНОПКА ДЛЯ АДМИНА - ИЗМЕНЕНИЕ СТАТУСА -->
+                    {% if user and user.username == 'admin' %}
+                    <a href="{{ url_for('toggle_book_status', book_id=book.id) }}" 
+                       class="btn-status {{ 'btn-make-unavailable' if book.available else 'btn-make-available' }}"
+                       onclick="return confirm('Изменить статус книги?')">
+                        <i class="fas fa-{{ 'times-circle' if book.available else 'check-circle' }}"></i>
+                        {% if book.available %}
+                            Сделать недоступной
+                        {% else %}
+                            Сделать доступной
+                        {% endif %}
+                    </a>
+                    {% endif %}
+                    
+                    <!-- КНОПКА ЧТЕНИЯ ДЛЯ ОБЫЧНЫХ ПОЛЬЗОВАТЕЛЕЙ -->
+                    {% if user and user.username != 'admin' %}
+                        {% if book.id in user_reading %}
+                        <a href="{{ url_for('toggle_reading', book_id=book.id) }}" class="btn-reading-small btn-reading-active" title="Завершить чтение" onclick="return confirm('Завершить чтение книги? Она переместится в историю.')">
+                            <i class="fas fa-book-open"></i>
+                        </a>
+                        {% else %}
+                        <a href="{{ url_for('toggle_reading', book_id=book.id) }}" class="btn-reading-small" title="Начать читать">
+                            <i class="fas fa-book"></i>
+                        </a>
+                        {% endif %}
+                    {% endif %}
+                    
+                    <!-- Кнопка избранного для всех пользователей -->
+                    {% if user %}
+                        {% if book.id in user_favorites %}
+                        <a href="{{ url_for('remove_from_favorites', book_id=book.id) }}" class="btn-favorite-small btn-favorite-active" title="Удалить из избранного">
+                            <i class="fas fa-heart"></i>
+                        </a>
+                        {% else %}
+                        <a href="{{ url_for('add_to_favorites', book_id=book.id) }}" class="btn-favorite-small" title="Добавить в избранное">
+                            <i class="far fa-heart"></i>
+                        </a>
+                        {% endif %}
+                    {% else %}
+                    <button class="btn-favorite-small" onclick="showLoginPrompt()" title="Добавить в избранное">
+                        <i class="far fa-heart"></i>
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="no-results">
+        <div class="no-results-icon">
+            <i class="fas fa-search"></i>
+        </div>
+        <h3>Книги не найдены</h3>
+        <p>Попробуйте изменить параметры поиска</p>
+        <a href="{{ url_for('catalog') }}" class="btn-primary">Сбросить фильтры</a>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+/* Все существующие стили остаются без изменений */
+.catalog-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.page-title {
+    font-size: 2.5rem;
+    color: var(--text-dark);
+    margin-bottom: 0.5rem;
+}
+
+.page-subtitle {
+    font-size: 1.2rem;
+    color: var(--text-light);
+}
+
+.catalog-filters {
+    background: white;
+    padding: 2rem;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    margin-bottom: 2rem;
+}
+
+.filter-form {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-end;
+    flex-wrap: wrap;
+}
+
+.filter-group {
+    flex: 1;
+    min-width: 200px;
+}
+
+.search-box {
+    display: flex;
+    background: var(--bg-light);
+    border-radius: var(--border-radius);
+    overflow: hidden;
+}
+
+.search-input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+}
+
+.search-input:focus {
+    outline: none;
+}
+
+.search-btn {
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.search-btn:hover {
+    background: var(--primary-dark);
+}
+
+.genre-select {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 2px solid #e5e7eb;
+    border-radius: var(--border-radius);
+    background: white;
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+.genre-select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+.btn-reset {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    background: #6b7280;
+    color: white;
+    text-decoration: none;
+    border-radius: var(--border-radius);
+    transition: background 0.3s;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+}
+
+.btn-reset:hover {
+    background: #4b5563;
+    color: white;
+}
+
+.results-info {
+    background: var(--bg-light);
+    padding: 1rem 1.5rem;
+    border-radius: var(--border-radius);
+    margin-bottom: 2rem;
+}
+
+.results-info p {
+    margin: 0.5rem 0;
+    color: var(--text-dark);
+}
+
+.results-info strong {
+    color: var(--primary-color);
+}
+
+.books-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 2rem;
+    margin-bottom: 3rem;
+}
+
+.book-card {
+    background: white;
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    transition: transform 0.3s, box-shadow 0.3s;
+    position: relative;
+}
+
+.book-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
+}
+
+.book-cover {
+    position: relative;
+    background: var(--bg-light);
+    padding: 2rem;
+    text-align: center;
+    font-size: 4rem;
+    color: var(--primary-color);
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.book-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.borrowed-label {
+    color: white;
+    background: #ef4444;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+.book-info {
+    padding: 1.5rem;
+}
+
+.book-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    color: var(--text-dark);
+    line-height: 1.3;
+}
+
+.book-author {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+    color: var(--text-light);
+    font-size: 0.9rem;
+}
+
+.book-themes {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+    color: var(--text-light);
+    font-size: 0.9rem;
+    flex-wrap: wrap;
+}
+
+.theme-tag {
+    background: var(--bg-light);
+    color: var(--primary-color);
+    padding: 0.2rem 0.6rem;
+    border-radius: 15px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    border: 1px solid var(--primary-color);
+    white-space: nowrap;
+}
+
+.theme-tag:hover {
+    background: var(--primary-color);
+    color: white;
+    cursor: default;
+}
+
+.book-year {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+    color: var(--text-light);
+    font-size: 0.9rem;
+}
+
+.book-availability {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin: 1rem 0;
+}
+
+.available {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.not-available {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.book-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-top: 1rem;
+}
+
+.btn-details {
+    background: var(--primary-color);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: var(--border-radius);
+    text-decoration: none;
+    transition: background 0.3s;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    flex: 1;
+    justify-content: center;
+}
+
+.btn-details:hover {
+    background: var(--primary-dark);
+    color: white;
+}
+
+/* Стили для кнопок чтения */
+.btn-reading-small {
+    background: transparent;
+    border: 2px solid #e5e7eb;
+    color: var(--text-light);
+    padding: 0.5rem;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-size: 1rem;
+}
+
+.btn-reading-small:hover {
+    border-color: #10b981;
+    color: #10b981;
+    transform: scale(1.1);
+}
+
+.btn-reading-small.btn-reading-active {
+    background: #10b981;
+    border-color: #10b981;
+    color: white;
+}
+
+.btn-reading-small.btn-reading-active:hover {
+    background: #059669;
+    border-color: #059669;
+}
+
+/* Стили для избранного */
+.btn-favorite-small {
+    background: transparent;
+    border: 2px solid #e5e7eb;
+    color: var(--text-light);
+    padding: 0.5rem;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-size: 1rem;
+}
+
+.btn-favorite-small:hover {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+    transform: scale(1.1);
+}
+
+.btn-favorite-small.btn-favorite-active {
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+    color: white;
+}
+
+/* Стили для кнопок статуса (админ) */
+.btn-status {
+    padding: 0.5rem 1rem;
+    border-radius: var(--border-radius);
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.3s;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    border: none;
+    cursor: pointer;
+    flex: 1;
+    justify-content: center;
+}
+
+.btn-make-available {
+    background: #10b981;
+    color: white;
+}
+
+.btn-make-available:hover {
+    background: #059669;
+    transform: translateY(-2px);
+}
+
+.btn-make-unavailable {
+    background: #ef4444;
+    color: white;
+}
+
+.btn-make-unavailable:hover {
+    background: #dc2626;
+    transform: translateY(-2px);
+}
+
+/* Индикатор статуса на обложке для админа */
+.book-status-indicator {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    padding: 0.3rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    z-index: 10;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.book-status-indicator.status-available {
+    background: #10b981;
+    color: white;
+}
+
+.book-status-indicator.status-unavailable {
+    background: #ef4444;
+    color: white;
+}
+
+/* Индикатор чтения в углу обложки */
+.reading-badge-corner {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: #10b981;
+    color: white;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.5);
+    z-index: 5;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+    }
+}
+
+/* Текстовый индикатор чтения */
+.reading-badge-text {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    background: #10b981;
+    color: white;
+    padding: 0.2rem 0.6rem;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 500;
+    margin-left: 0.5rem;
+    white-space: nowrap;
+}
+
+.reading-badge-text i {
+    font-size: 0.6rem;
+}
+
+.no-results {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: white;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+}
+
+.no-results-icon {
+    font-size: 4rem;
+    color: var(--text-light);
+    margin-bottom: 1rem;
+}
+
+.no-results h3 {
+    margin-bottom: 0.5rem;
+    color: var(--text-dark);
+    font-size: 1.5rem;
+}
+
+.no-results p {
+    color: var(--text-light);
+    margin-bottom: 2rem;
+}
+
+.btn-primary {
+    background: var(--primary-color);
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--border-radius);
+    text-decoration: none;
+    display: inline-block;
+    transition: background 0.3s;
+}
+
+.btn-primary:hover {
+    background: var(--primary-dark);
+}
+
+/* Адаптация для мобильных */
+@media (max-width: 768px) {
+    .filter-form {
+        flex-direction: column;
+    }
+    
+    .filter-group {
+        min-width: 100%;
+    }
+    
+    .book-actions {
+        flex-direction: column;
+    }
+    
+    .btn-details, .btn-status {
+        width: 100%;
+    }
+    
+    .btn-reading-small, .btn-favorite-small {
+        align-self: center;
+        width: 45px;
+        height: 45px;
+    }
+    
+    .books-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .catalog-header {
+        margin-bottom: 2rem;
+    }
+    
+    .page-title {
+        font-size: 2rem;
+    }
+    
+    .book-status-indicator {
+        top: 5px;
+        left: 5px;
+        padding: 0.2rem 0.5rem;
+        font-size: 0.65rem;
+    }
+    
+    .reading-badge-corner {
+        width: 25px;
+        height: 25px;
+        font-size: 0.8rem;
+        top: 5px;
+        left: 5px;
+    }
+    
+    .book-themes {
+        gap: 0.3rem;
+    }
+    
+    .theme-tag {
+        font-size: 0.7rem;
+        padding: 0.15rem 0.4rem;
+    }
+}
+</style>
+
+<script>
+function showLoginPrompt() {
+    if (confirm('Для добавления в избранное необходимо войти в систему. Перейти на страницу входа?')) {
+        window.location.href = '/login';
+    }
+}
+
+// Подтверждение для кнопок изменения статуса
+document.addEventListener('DOMContentLoaded', function() {
+    const statusButtons = document.querySelectorAll('.btn-status');
+    statusButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            if (!confirm('Изменить статус книги?')) {
+                e.preventDefault();
+            }
+        });
+    });
+    
+    const readingButtons = document.querySelectorAll('.btn-reading-small');
+    readingButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            if (button.classList.contains('btn-reading-active')) {
+                if (!confirm('Завершить чтение книги? Она переместится в историю.')) {
+                    e.preventDefault();
+                }
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

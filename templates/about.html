@@ -1,0 +1,518 @@
+{% extends "base.html" %}
+
+{% block title %}О нас - Библиотека школы 509{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Hero Section -->
+    <section class="about-hero">
+        <div class="about-hero-content">
+            <h1 class="animate-fade-in">О библиотеке школы 509</h1>
+            <p class="animate-fade-in-delay">Место, где рождаются великие умы и любовь к чтению</p>
+        </div>
+        <div class="about-hero-image">
+            <i class="fas fa-library"></i>
+        </div>
+    </section>
+
+    <!-- Mission Section -->
+    <section class="mission-section">
+        <div class="mission-grid">
+            <div class="mission-content">
+                <h2>Наша миссия</h2>
+                <p>Мы создаем образовательную среду, где каждый ученик может открыть для себя мир знаний через чтение. Наша библиотека - это не просто собрание книг, а живое пространство для обучения, творчества и развития.</p>
+                
+                <div class="mission-stats">
+                    <div class="mission-stat">
+                        <span class="stat-number">{{ total_books if total_books else '5000+' }}</span>
+                        <span class="stat-label">Книг в фонде</span>
+                    </div>
+                    <div class="mission-stat">
+                        <span class="stat-number">1000+</span>
+                        <span class="stat-label">Активных читателей</span>
+                    </div>
+                    <div class="mission-stat">
+                        <span class="stat-number">50+</span>
+                        <span class="stat-label">Мероприятий в год</span>
+                    </div>
+                </div>
+            </div>
+            <div class="mission-image">
+                <i class="fas fa-graduation-cap"></i>
+            </div>
+        </div>
+    </section>
+
+    <!-- Team Section -->
+    <section class="team-section">
+        <h2>Наша команда</h2>
+        <p class="team-subtitle">Профессионалы, которые помогут вам найти нужную книгу</p>
+        
+        <div class="team-grid">
+            <div class="team-member">
+                <div class="member-photo">
+                    <i class="fas fa-user-tie"></i>
+                </div>
+                <h3>Иванова Мария Петровна</h3>
+                <p class="member-role">Заведующая библиотекой</p>
+                <p class="member-bio">Опыт работы: 15 лет. Специалист в области детской литературы.</p>
+            </div>
+            <div class="team-member">
+                <div class="member-photo">
+                    <i class="fas fa-user-graduate"></i>
+                </div>
+                <h3>Петров Алексей Владимирович</h3>
+                <p class="member-role">Библиотекарь</p>
+                <p class="member-bio">Опыт работы: 8 лет. Эксперт по научно-популярной литературе.</p>
+            </div>
+            <div class="team-member">
+                <div class="member-photo">
+                    <i class="fas fa-user"></i>
+                </div>
+                <h3>Сидорова Елена Игоревна</h3>
+                <p class="member-role">Педагог-библиотекарь</p>
+                <p class="member-bio">Опыт работы: 10 лет. Организатор литературных мероприятий.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Services Section -->
+    <section class="services-section">
+        <h2>Наши услуги</h2>
+        <div class="services-grid">
+            <div class="service-card">
+                <div class="service-icon">
+                    <i class="fas fa-book-open"></i>
+                </div>
+                <h3>Выдача книг</h3>
+                <p>Бесплатная выдача художественной, учебной и научной литературы</p>
+            </div>
+            <div class="service-card">
+                <div class="service-icon">
+                    <i class="fas fa-laptop"></i>
+                </div>
+                <h3>Электронный каталог</h3>
+                <p>Доступ к онлайн-каталогу и бронированию книг 24/7</p>
+            </div>
+            <div class="service-card">
+                <div class="service-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <h3>Литературные кружки</h3>
+                <p>Клубы чтения и литературные вечера для всех возрастов</p>
+            </div>
+            <div class="service-card">
+                <div class="service-icon">
+                    <i class="fas fa-search"></i>
+                </div>
+                <h3>Библиографическая помощь</h3>
+                <p>Помощь в подборе литературы для учебных проектов</p>
+            </div>
+            <div class="service-card">
+                <div class="service-icon">
+                    <i class="fas fa-desktop"></i>
+                </div>
+                <h3>Компьютерный класс</h3>
+                <p>Доступ к компьютерам для учебных целей</p>
+            </div>
+            <div class="service-card">
+                <div class="service-icon">
+                    <i class="fas fa-calendar-alt"></i>
+                </div>
+                <h3>Мероприятия</h3>
+                <p>Встречи с авторами, викторины и литературные конкурсы</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Info -->
+    <section class="contact-section">
+        <div class="contact-grid">
+            <div class="contact-info">
+                <h2>Контакты</h2>
+                <div class="contact-item">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <div>
+                        <strong>Адрес</strong>
+                        <p>ул. Школьная, д. 1, кабинет 215</p>
+                        <p>Школа №509, 2 этаж</p>
+                    </div>
+                </div>
+                <div class="contact-item">
+                    <i class="fas fa-clock"></i>
+                    <div>
+                        <strong>Часы работы</strong>
+                        <p>Пн-Пт: 9:00 - 17:00<br>Сб: 10:00 - 14:00<br>Вс: выходной</p>
+                    </div>
+                </div>
+                <div class="contact-item">
+                    <i class="fas fa-phone"></i>
+                    <div>
+                        <strong>Телефон</strong>
+                        <p>+7 (495) 123-45-67</p>
+                        <p>Внутренний: 123</p>
+                    </div>
+                </div>
+                <div class="contact-item">
+                    <i class="fas fa-envelope"></i>
+                    <div>
+                        <strong>Email</strong>
+                        <p>library@school509.ru</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="visit-prompt">
+                <h3>Посетите нас!</h3>
+                <p>Мы ждем вас в нашей уютной библиотеке. Приходите за книгами, знаниями и вдохновением!</p>
+                <div class="library-features">
+                    <div class="feature">
+                        <i class="fas fa-wifi"></i>
+                        <span>Бесплатный Wi-Fi</span>
+                    </div>
+                    <div class="feature">
+                        <i class="fas fa-coffee"></i>
+                        <span>Уютная зона чтения</span>
+                    </div>
+                    <div class="feature">
+                        <i class="fas fa-leaf"></i>
+                        <span>Комфортная атмосфера</span>
+                    </div>
+                    <div class="feature">
+                        <i class="fas fa-book-reader"></i>
+                        <span>Богатый выбор литературы</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<style>
+.about-hero {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    color: white;
+    padding: 4rem 2rem;
+    border-radius: var(--border-radius);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 4rem;
+}
+
+.about-hero-content h1 {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+.about-hero-content p {
+    font-size: 1.25rem;
+    opacity: 0.9;
+}
+
+.about-hero-image {
+    font-size: 8rem;
+    opacity: 0.3;
+}
+
+.mission-section {
+    margin-bottom: 4rem;
+}
+
+.mission-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 4rem;
+    align-items: center;
+}
+
+.mission-content h2 {
+    font-size: 2.5rem;
+    margin-bottom: 1.5rem;
+    color: var(--text-dark);
+}
+
+.mission-content p {
+    font-size: 1.1rem;
+    line-height: 1.8;
+    margin-bottom: 2rem;
+    color: var(--text-light);
+}
+
+.mission-stats {
+    display: flex;
+    gap: 2rem;
+}
+
+.mission-stat {
+    text-align: center;
+}
+
+.mission-stat .stat-number {
+    display: block;
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-bottom: 0.5rem;
+}
+
+.mission-stat .stat-label {
+    font-size: 0.9rem;
+    color: var(--text-light);
+}
+
+.mission-image {
+    text-align: center;
+    font-size: 6rem;
+    color: var(--primary-color);
+    opacity: 0.7;
+}
+
+.team-section {
+    margin-bottom: 4rem;
+    text-align: center;
+}
+
+.team-section h2 {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    color: var(--text-dark);
+}
+
+.team-subtitle {
+    font-size: 1.2rem;
+    color: var(--text-light);
+    margin-bottom: 3rem;
+}
+
+.team-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+}
+
+.team-member {
+    background: white;
+    padding: 2rem;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    text-align: center;
+}
+
+.member-photo {
+    width: 80px;
+    height: 80px;
+    background: var(--bg-light);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+    font-size: 2rem;
+    color: var(--primary-color);
+}
+
+.team-member h3 {
+    margin-bottom: 0.5rem;
+    color: var(--text-dark);
+}
+
+.member-role {
+    color: var(--primary-color);
+    font-weight: 500;
+    margin-bottom: 1rem;
+}
+
+.member-bio {
+    color: var(--text-light);
+    font-size: 0.9rem;
+    line-height: 1.6;
+}
+
+.services-section {
+    margin-bottom: 4rem;
+}
+
+.services-section h2 {
+    text-align: center;
+    font-size: 2.5rem;
+    margin-bottom: 3rem;
+    color: var(--text-dark);
+}
+
+.services-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+}
+
+.service-card {
+    background: white;
+    padding: 2rem;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    text-align: center;
+    transition: transform 0.3s;
+}
+
+.service-card:hover {
+    transform: translateY(-5px);
+}
+
+.service-icon {
+    font-size: 3rem;
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+}
+
+.service-card h3 {
+    margin-bottom: 1rem;
+    color: var(--text-dark);
+}
+
+.service-card p {
+    color: var(--text-light);
+    line-height: 1.6;
+}
+
+.contact-section {
+    background: white;
+    padding: 3rem;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+}
+
+.contact-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+}
+
+.contact-info h2 {
+    margin-bottom: 2rem;
+    color: var(--text-dark);
+}
+
+.contact-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.contact-item i {
+    font-size: 1.5rem;
+    color: var(--primary-color);
+    margin-top: 0.25rem;
+    flex-shrink: 0;
+}
+
+.contact-item strong {
+    display: block;
+    margin-bottom: 0.25rem;
+    color: var(--text-dark);
+}
+
+.contact-item p {
+    color: var(--text-light);
+    margin: 0.25rem 0;
+}
+
+.visit-prompt h3 {
+    margin-bottom: 1rem;
+    color: var(--text-dark);
+}
+
+.visit-prompt p {
+    color: var(--text-light);
+    margin-bottom: 2rem;
+    line-height: 1.6;
+}
+
+.library-features {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.feature {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: var(--bg-light);
+    border-radius: var(--border-radius);
+}
+
+.feature i {
+    color: var(--primary-color);
+    font-size: 1.2rem;
+}
+
+@media (max-width: 768px) {
+    .about-hero {
+        flex-direction: column;
+        text-align: center;
+        gap: 2rem;
+    }
+    
+    .about-hero-content h1 {
+        font-size: 2rem;
+    }
+    
+    .mission-grid {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+    }
+    
+    .mission-stats {
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    
+    .contact-grid {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+    }
+    
+    .library-features {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Анимация появления элементов при скролле
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
+            }
+        });
+    }, observerOptions);
+
+    // Анимируем карточки услуг
+    document.querySelectorAll('.service-card').forEach(card => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(30px)';
+        card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+        observer.observe(card);
+    });
+
+    // Анимируем членов команды
+    document.querySelectorAll('.team-member').forEach(member => {
+        member.style.opacity = '0';
+        member.style.transform = 'translateY(30px)';
+        member.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+        observer.observe(member);
+    });
+});
+</script>
+{% endblock %}

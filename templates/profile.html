@@ -1,0 +1,1639 @@
+{% extends "base.html" %}
+
+{% block title %}Личный кабинет - Библиотека школы 509{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="profile-header">
+        <div class="profile-info">
+            <div class="profile-avatar">
+                <i class="fas fa-user-graduate"></i>
+            </div>
+            <div class="profile-details">
+                <h1>{{ user.full_name }}</h1>
+                <p class="profile-username">@{{ user.username }}</p>
+                <div class="profile-stats">
+                    <div class="stat">
+                        <span class="stat-number">{{ reading_books|length }}</span>
+                        <span class="stat-label">Читаю сейчас</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-number">{{ history_books|length }}</span>
+                        <span class="stat-label">В истории</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-number">{{ favorite_books|length }}</span>
+                        <span class="stat-label">В избранном</span>
+                    </div>
+                </div>
+                <div class="profile-register-date">
+                    <i class="fas fa-calendar-alt"></i>
+                    С нами с: {{ user_data.registered_at[:10] }}
+                </div>
+            </div>
+        </div>
+        <div class="profile-actions">
+            <button class="btn-outline" onclick="openEditModal()">
+                <i class="fas fa-edit"></i>
+                Редактировать профиль
+            </button>
+            <a href="{{ url_for('logout') }}" class="btn-outline">
+                <i class="fas fa-sign-out-alt"></i>
+                Выйти
+            </a>
+        </div>
+    </div>
+
+    <div class="profile-content">
+        <!-- Вкладки -->
+        <div class="profile-tabs">
+            <button class="tab-btn active" data-tab="reading">Читаю сейчас</button>
+            <button class="tab-btn" data-tab="history">История чтения</button>
+            <button class="tab-btn" data-tab="favorites">Избранное</button>
+            <button class="tab-btn" data-tab="settings">Настройки</button>
+        </div>
+
+        <!-- Содержимое вкладок -->
+        <div class="tab-content">
+            <!-- Вкладка "Читаю сейчас" (БЕЗ КНОПКИ ПРОДЛИТЬ) -->
+            <div id="reading" class="tab-pane active">
+                <div class="section-header">
+                    <h2>Книги, которые я читаю</h2>
+                    <p>Список книг, которые вы сейчас читаете</p>
+                </div>
+
+                {% if user.username != 'admin' %}
+                    {% if reading_books %}
+                    <div class="books-grid">
+                        {% for book in reading_books %}
+                        <div class="book-card">
+                            <div class="book-cover">
+                                <i class="fas fa-book"></i>
+                                <div class="book-status reading">
+                                    <i class="fas fa-book-open"></i>
+                                    Читаю
+                                </div>
+                            </div>
+                            <div class="book-info">
+                                <h3 class="book-title">{{ book.title }}</h3>
+                                <p class="book-author">{{ book.author }}</p>
+                                <div class="book-themes">
+                                    {% for theme in book.theme %}
+                                    <span class="theme-tag">{{ theme }}</span>
+                                    {% endfor %}
+                                </div>
+                                
+                                {% set start_date = user_data.reading_dates.get(book.id|string, user_data.registered_at[:10]) %}
+                                <div class="reading-info">
+                                    <p><i class="fas fa-clock"></i> Начал(а) читать: {{ start_date[:10] }}</p>
+                                </div>
+                                
+                                <div class="book-actions">
+                                    <a href="{{ url_for('book_detail', book_id=book.id) }}" class="btn-details">
+                                        <i class="fas fa-info-circle"></i>
+                                        Подробнее
+                                    </a>
+                                    <a href="{{ url_for('toggle_reading', book_id=book.id) }}" class="btn-finish" onclick="return confirm('Завершить чтение книги? Она будет перемещена в историю.')">
+                                        <i class="fas fa-check"></i>
+                                        Завершить
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="empty-state">
+                        <div class="empty-icon">
+                            <i class="fas fa-book-open"></i>
+                        </div>
+                        <h3>Вы еще не начали читать</h3>
+                        <p>Начните читать книги и они появятся здесь</p>
+                        <a href="/catalog" class="btn-primary">
+                            <i class="fas fa-search"></i>
+                            Выбрать книгу
+                        </a>
+                    </div>
+                    {% endif %}
+                {% else %}
+                <div class="empty-state admin-empty-state">
+                    <div class="empty-icon">
+                        <i class="fas fa-crown"></i>
+                    </div>
+                    <h3>Вы администратор</h3>
+                    <p>Управляйте статусами книг в каталоге</p>
+                    <div class="admin-quick-links">
+                        <a href="/catalog" class="btn-primary">
+                            <i class="fas fa-book"></i>
+                            Перейти в каталог
+                        </a>
+                        <a href="/catalog?theme=Война" class="btn-secondary">
+                            <i class="fas fa-filter"></i>
+                            Война
+                        </a>
+                        <a href="/catalog?theme=Любовь" class="btn-secondary">
+                            <i class="fas fa-filter"></i>
+                            Любовь
+                        </a>
+                        <a href="/catalog?theme=Судьба" class="btn-secondary">
+                            <i class="fas fa-filter"></i>
+                            Судьба
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Вкладка "История чтения" -->
+            <div id="history" class="tab-pane">
+                <div class="section-header">
+                    <h2>История чтения</h2>
+                    <p>Все книги, которые вы прочитали</p>
+                    {% if history_books and user.username != 'admin' %}
+                    <button class="btn-clear-history" onclick="showClearHistoryModal()">
+                        <i class="fas fa-trash-alt"></i>
+                        Очистить историю
+                    </button>
+                    {% endif %}
+                </div>
+                
+                {% if user.username != 'admin' %}
+                    {% if history_books %}
+                    <div class="history-grid">
+                        {% for item in history_books %}
+                        <div class="history-card">
+                            <div class="history-cover">
+                                <i class="fas fa-book"></i>
+                            </div>
+                            <div class="history-info">
+                                <h3>{{ item.book.title }}</h3>
+                                <p class="history-author">{{ item.book.author }}</p>
+                                <div class="history-themes">
+                                    {% for theme in item.book.theme %}
+                                    <span class="theme-tag">{{ theme }}</span>
+                                    {% endfor %}
+                                </div>
+                                <p class="history-date">
+                                    <i class="fas fa-calendar-check"></i>
+                                    Прочитано: {{ item.date[:10] }}
+                                </p>
+                                <a href="{{ url_for('book_detail', book_id=item.book.id) }}" class="btn-view">
+                                    <i class="fas fa-eye"></i>
+                                    Просмотр
+                                </a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="empty-state">
+                        <div class="empty-icon">
+                            <i class="fas fa-history"></i>
+                        </div>
+                        <h3>История чтения пуста</h3>
+                        <p>Завершайте чтение книг и они появятся в истории</p>
+                        <a href="/catalog" class="btn-primary">
+                            <i class="fas fa-search"></i>
+                            Найти книги
+                        </a>
+                    </div>
+                    {% endif %}
+                {% else %}
+                <div class="empty-state">
+                    <div class="empty-icon">
+                        <i class="fas fa-history"></i>
+                    </div>
+                    <h3>История чтения</h3>
+                    <p>Как администратор, вы можете видеть только статистику книг</p>
+                    <div class="admin-stats-small">
+                        <div class="stat-item">
+                            <span class="stat-value">{{ history_books|length }}</span>
+                            <span class="stat-label">книг в истории</span>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Вкладка "Избранное" -->
+            <div id="favorites" class="tab-pane">
+                <div class="section-header">
+                    <h2>Избранные книги</h2>
+                    <p>Книги, которые вы хотите прочитать</p>
+                </div>
+                
+                {% if favorite_books %}
+                <div class="books-grid">
+                    {% for book in favorite_books %}
+                    <div class="book-card">
+                        <div class="book-cover">
+                            <i class="fas fa-book"></i>
+                            <div class="book-actions-overlay">
+                                <a href="{{ url_for('remove_from_favorites', book_id=book.id) }}" class="btn-remove-favorite" title="Удалить из избранного" onclick="return confirm('Удалить книгу из избранного?')">
+                                    <i class="fas fa-times"></i>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="book-info">
+                            <h3 class="book-title">{{ book.title }}</h3>
+                            <p class="book-author">{{ book.author }}</p>
+                            <div class="book-themes">
+                                {% for theme in book.theme %}
+                                <span class="theme-tag">{{ theme }}</span>
+                                {% endfor %}
+                            </div>
+                            <div class="book-actions">
+                                <a href="{{ url_for('book_detail', book_id=book.id) }}" class="btn-details">
+                                    <i class="fas fa-info-circle"></i>
+                                    Подробнее
+                                </a>
+                                {% if user.username != 'admin' %}
+                                <a href="{{ url_for('toggle_reading', book_id=book.id) }}" class="btn-primary btn-sm">
+                                    <i class="fas fa-book"></i>
+                                    Читать
+                                </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <div class="empty-icon">
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <h3>Список избранного пуст</h3>
+                    <p>Добавляйте книги в избранное, чтобы не потерять</p>
+                    <a href="/catalog" class="btn-primary">
+                        <i class="fas fa-search"></i>
+                        Найти книги
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Вкладка "Настройки" (БЕЗ УВЕДОМЛЕНИЙ) -->
+            <div id="settings" class="tab-pane">
+                <div class="section-header">
+                    <h2>Настройки аккаунта</h2>
+                    <p>Управление вашим профилем</p>
+                </div>
+                
+                <div class="settings-grid">
+                    <!-- Карточка с личной информацией -->
+                    <div class="setting-card">
+                        <h3>
+                            <i class="fas fa-user-circle"></i>
+                            Личная информация
+                        </h3>
+                        
+                        <!-- Блок для отображения flash сообщений об ошибках email -->
+                        {% with messages = get_flashed_messages(with_categories=true) %}
+                            {% if messages %}
+                                {% for category, message in messages %}
+                                    {% if category == 'error' and 'email' in message %}
+                                    <div class="error-message">
+                                        <i class="fas fa-exclamation-circle"></i>
+                                        {{ message }}
+                                    </div>
+                                    {% endif %}
+                                {% endfor %}
+                            {% endif %}
+                        {% endwith %}
+                        
+                        <form method="POST" action="{{ url_for('update_profile') }}" class="setting-form" id="profileForm">
+                            <div class="form-group">
+                                <label for="full_name">
+                                    <i class="fas fa-user"></i>
+                                    ФИО
+                                </label>
+                                <input type="text" id="full_name" name="full_name" value="{{ user.full_name }}" class="form-input" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="grade">
+                                    <i class="fas fa-graduation-cap"></i>
+                                    Класс
+                                </label>
+                                <input type="text" value="{{ user.grade }} класс" class="form-input" disabled>
+                                <small class="form-help">Класс можно изменить только через администратора</small>
+                            </div>
+                            
+                            <div class="form-group" id="emailGroup">
+                                <label for="email">
+                                    <i class="fas fa-envelope"></i>
+                                    Email
+                                </label>
+                                <input type="email" 
+                                       id="email" 
+                                       name="email" 
+                                       value="{{ user_data.email }}" 
+                                       class="form-input" 
+                                       required
+                                       oninput="validateEmail(this)">
+                                <div class="email-validation" id="emailValidation"></div>
+                                <small class="form-help">Введите действующий email</small>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="registered">
+                                    <i class="fas fa-calendar-alt"></i>
+                                    Дата регистрации
+                                </label>
+                                <input type="text" value="{{ user_data.registered_at[:10] }}" class="form-input" disabled>
+                            </div>
+                            
+                            <button type="submit" class="btn-save" id="saveBtn">
+                                <i class="fas fa-save"></i>
+                                Сохранить изменения
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Карточка с дополнительной информацией -->
+                    <div class="setting-card">
+                        <h3>
+                            <i class="fas fa-chart-bar"></i>
+                            Статистика аккаунта
+                        </h3>
+                        
+                        <div class="stats-list">
+                            <div class="stat-item">
+                                <span class="stat-label">Книг читаю сейчас:</span>
+                                <span class="stat-value-badge">{{ reading_books|length }}</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Книг в истории:</span>
+                                <span class="stat-value-badge">{{ history_books|length }}</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">В избранном:</span>
+                                <span class="stat-value-badge">{{ favorite_books|length }}</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">С нами с:</span>
+                                <span class="stat-value-badge">{{ user_data.registered_at[:10] }}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="info-box">
+                            <i class="fas fa-info-circle"></i>
+                            <p>Для изменения класса или других вопросов обратитесь к администратору библиотеки.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Опасная зона (удаление аккаунта) -->
+                <div class="danger-zone">
+                    <h4>
+                        <i class="fas fa-exclamation-triangle"></i>
+                        Опасная зона
+                    </h4>
+                    <p class="danger-warning">
+                        <i class="fas fa-exclamation-circle"></i>
+                        Внимание! Это действие нельзя отменить. Все ваши данные (история чтения, избранное) будут безвозвратно удалены.
+                    </p>
+                    <button class="btn-danger" onclick="showDeleteModal()">
+                        <i class="fas fa-trash"></i>
+                        Удалить аккаунт
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно редактирования -->
+<div id="editModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Редактирование профиля</h3>
+            <span class="close" onclick="closeEditModal()">&times;</span>
+        </div>
+        <form method="POST" action="{{ url_for('update_profile') }}" class="modal-form">
+            <div class="form-group">
+                <label for="modal_full_name">ФИО</label>
+                <input type="text" id="modal_full_name" name="full_name" value="{{ user.full_name }}" class="form-input" required>
+            </div>
+            <div class="form-group">
+                <label for="modal_email">Email</label>
+                <input type="email" id="modal_email" name="email" value="{{ user_data.email }}" class="form-input" required>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn-secondary" onclick="closeEditModal()">Отмена</button>
+                <button type="submit" class="btn-primary">Сохранить</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Модальное окно подтверждения удаления аккаунта -->
+<div id="deleteModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 style="color: #dc2626;">
+                <i class="fas fa-exclamation-triangle"></i>
+                Подтверждение удаления аккаунта
+            </h3>
+            <span class="close" onclick="closeDeleteModal()">&times;</span>
+        </div>
+        <form method="POST" action="{{ url_for('delete_account') }}" class="modal-form">
+            <div class="delete-warning">
+                <p><strong>ВНИМАНИЕ! Это действие нельзя отменить.</strong></p>
+                <p>При удалении аккаунта будут безвозвратно удалены:</p>
+                <ul>
+                    <li>Все ваши личные данные</li>
+                    <li>История чтения</li>
+                    <li>Список избранного</li>
+                </ul>
+            </div>
+            
+            <div class="form-group">
+                <label for="confirmation" class="confirmation-label">
+                    Для подтверждения введите: <strong>УДАЛИТЬ АККАУНТ</strong>
+                </label>
+                <input type="text" id="confirmation" name="confirmation" class="form-input" 
+                       placeholder="УДАЛИТЬ АККАУНТ" required
+                       oninput="checkConfirmation(this)">
+            </div>
+            
+            <div class="modal-actions">
+                <button type="button" class="btn-secondary" onclick="closeDeleteModal()">Отмена</button>
+                <button type="submit" class="btn-danger" id="deleteButton" disabled>Удалить аккаунт</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Модальное окно очистки истории -->
+<div id="clearHistoryModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 style="color: #f59e0b;">
+                <i class="fas fa-trash-alt"></i>
+                Очистка истории чтения
+            </h3>
+            <span class="close" onclick="closeClearHistoryModal()">&times;</span>
+        </div>
+        <form method="POST" action="{{ url_for('clear_history') }}" class="modal-form">
+            <div class="delete-warning" style="background: #fef3cd; border-color: #fde68a;">
+                <p><strong>Вы уверены, что хотите очистить историю чтения?</strong></p>
+                <p>Это действие нельзя отменить. Все записи о прочитанных книгах будут удалены.</p>
+            </div>
+            
+            <div class="form-group">
+                <label for="history_confirmation" class="confirmation-label">
+                    Для подтверждения введите: <strong>ОЧИСТИТЬ ИСТОРИЮ</strong>
+                </label>
+                <input type="text" id="history_confirmation" name="confirmation" class="form-input" 
+                       placeholder="ОЧИСТИТЬ ИСТОРИЮ" required
+                       oninput="checkHistoryConfirmation(this)">
+            </div>
+            
+            <div class="modal-actions">
+                <button type="button" class="btn-secondary" onclick="closeClearHistoryModal()">Отмена</button>
+                <button type="submit" class="btn-warning" id="clearHistoryButton" disabled>
+                    <i class="fas fa-trash-alt"></i>
+                    Очистить историю
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+/* Основные стили профиля */
+.profile-header {
+    background: white;
+    padding: 2rem;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 2rem;
+}
+
+.profile-info {
+    display: flex;
+    gap: 2rem;
+    align-items: flex-start;
+}
+
+.profile-avatar {
+    width: 100px;
+    height: 100px;
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    color: white;
+}
+
+.profile-details h1 {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+    color: var(--text-dark);
+}
+
+.profile-username {
+    color: var(--text-light);
+    margin-bottom: 1rem;
+}
+
+.profile-register-date {
+    color: var(--text-light);
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.profile-register-date i {
+    color: var(--primary-color);
+}
+
+.profile-stats {
+    display: flex;
+    gap: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+.stat {
+    text-align: center;
+}
+
+.stat-number {
+    display: block;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-bottom: 0.25rem;
+}
+
+.stat-label {
+    font-size: 0.8rem;
+    color: var(--text-light);
+}
+
+.profile-actions {
+    display: flex;
+    gap: 1rem;
+}
+
+.btn-outline {
+    background: transparent;
+    border: 2px solid var(--primary-color);
+    color: var(--primary-color);
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+    font-size: 0.9rem;
+}
+
+.btn-outline:hover {
+    background: var(--primary-color);
+    color: white;
+}
+
+.profile-tabs {
+    display: flex;
+    background: white;
+    border-radius: var(--border-radius) var(--border-radius) 0 0;
+    box-shadow: var(--shadow);
+    overflow-x: auto;
+}
+
+.tab-btn {
+    padding: 1rem 2rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--text-light);
+    border-bottom: 3px solid transparent;
+    transition: all 0.3s;
+    white-space: nowrap;
+}
+
+.tab-btn:hover {
+    color: var(--primary-color);
+}
+
+.tab-btn.active {
+    color: var(--primary-color);
+    border-bottom-color: var(--primary-color);
+}
+
+.tab-content {
+    background: white;
+    border-radius: 0 0 var(--border-radius) var(--border-radius);
+    box-shadow: var(--shadow);
+    padding: 2rem;
+}
+
+.tab-pane {
+    display: none;
+}
+
+.tab-pane.active {
+    display: block;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.section-header h2 {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+    color: var(--text-dark);
+}
+
+.section-header p {
+    color: var(--text-light);
+    margin: 0;
+}
+
+/* Стили для книг */
+.books-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-bottom: 3rem;
+}
+
+.book-card {
+    background: white;
+    border-radius: var(--border-radius);
+    padding: 1.5rem;
+    box-shadow: var(--shadow);
+    transition: transform 0.3s, box-shadow 0.3s;
+    position: relative;
+    border: 1px solid #e5e7eb;
+}
+
+.book-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
+}
+
+.book-cover {
+    position: relative;
+    font-size: 3rem;
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+    text-align: center;
+    background: var(--bg-light);
+    border-radius: 8px;
+    padding: 1.5rem;
+}
+
+.book-status {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.book-status.reading {
+    background: #10b981;
+    color: white;
+}
+
+.book-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--text-dark);
+}
+
+.book-author {
+    color: var(--text-light);
+    font-size: 0.9rem;
+    margin-bottom: 0.25rem;
+}
+
+/* Стили для тегов тем */
+.book-themes, .history-themes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    margin: 0.5rem 0;
+}
+
+.theme-tag {
+    background: var(--bg-light);
+    color: var(--primary-color);
+    padding: 0.2rem 0.6rem;
+    border-radius: 15px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    border: 1px solid var(--primary-color);
+    white-space: nowrap;
+    display: inline-block;
+}
+
+.theme-tag:hover {
+    background: var(--primary-color);
+    color: white;
+    cursor: default;
+}
+
+.reading-info {
+    background: #f0fdf4;
+    padding: 0.75rem;
+    border-radius: var(--border-radius);
+    margin: 1rem 0;
+    font-size: 0.85rem;
+    color: #065f46;
+    border: 1px solid #d1fae5;
+}
+
+.reading-info i {
+    margin-right: 0.5rem;
+    color: #10b981;
+}
+
+.book-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-top: 1rem;
+}
+
+.btn-details {
+    background: var(--primary-color);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: var(--border-radius);
+    text-decoration: none;
+    transition: background 0.3s;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    flex: 1;
+    justify-content: center;
+}
+
+.btn-details:hover {
+    background: var(--primary-dark);
+}
+
+.btn-finish {
+    background: #10b981;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: var(--border-radius);
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.3s;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    border: none;
+    cursor: pointer;
+    flex: 1;
+    justify-content: center;
+}
+
+.btn-finish:hover {
+    background: #059669;
+    transform: translateY(-2px);
+}
+
+.btn-primary {
+    background: var(--primary-color);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: var(--border-radius);
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.3s;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    border: none;
+    cursor: pointer;
+}
+
+.btn-primary:hover {
+    background: var(--primary-dark);
+}
+
+.btn-sm {
+    padding: 0.5rem 1rem;
+    font-size: 0.8rem;
+}
+
+/* Стили для истории */
+.history-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
+
+.history-card {
+    background: var(--bg-light);
+    border-radius: var(--border-radius);
+    padding: 1rem;
+    display: flex;
+    gap: 1rem;
+    transition: transform 0.3s;
+    border: 1px solid #e5e7eb;
+}
+
+.history-card:hover {
+    transform: translateX(5px);
+    box-shadow: var(--shadow);
+    border-color: var(--primary-color);
+}
+
+.history-cover {
+    width: 80px;
+    height: 100px;
+    background: white;
+    border-radius: var(--border-radius);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    color: var(--primary-color);
+    flex-shrink: 0;
+    box-shadow: var(--shadow);
+}
+
+.history-info {
+    flex: 1;
+}
+
+.history-info h3 {
+    font-size: 1rem;
+    margin-bottom: 0.25rem;
+    color: var(--text-dark);
+    font-weight: 600;
+}
+
+.history-author {
+    font-size: 0.8rem;
+    color: var(--text-light);
+    margin-bottom: 0.25rem;
+}
+
+.history-date {
+    font-size: 0.75rem;
+    color: var(--text-light);
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    margin-bottom: 0.5rem;
+}
+
+.history-date i {
+    color: #10b981;
+}
+
+.btn-view {
+    background: var(--primary-color);
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    text-decoration: none;
+    font-size: 0.7rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    transition: background 0.3s;
+}
+
+.btn-view:hover {
+    background: var(--primary-dark);
+}
+
+.btn-clear-history {
+    background: #f59e0b;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.btn-clear-history:hover {
+    background: #d97706;
+    transform: translateY(-2px);
+}
+
+/* Стили для избранного */
+.book-actions-overlay {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.book-card:hover .book-actions-overlay {
+    opacity: 1;
+}
+
+.btn-remove-favorite {
+    background: rgba(239, 68, 68, 0.9);
+    color: white;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    transition: all 0.3s;
+}
+
+.btn-remove-favorite:hover {
+    background: #ef4444;
+    transform: scale(1.1);
+}
+
+/* Стили для пустого состояния */
+.empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: white;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+}
+
+.empty-icon {
+    font-size: 4rem;
+    color: var(--text-light);
+    margin-bottom: 1rem;
+}
+
+.empty-state h3 {
+    margin-bottom: 0.5rem;
+    color: var(--text-dark);
+    font-size: 1.5rem;
+}
+
+.empty-state p {
+    color: var(--text-light);
+    margin-bottom: 2rem;
+}
+
+.admin-empty-state {
+    background: linear-gradient(135deg, #fef3cd, #fde68a);
+    border: 2px solid #f59e0b;
+}
+
+.admin-quick-links {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.admin-stats-small {
+    display: flex;
+    justify-content: center;
+    margin-top: 1.5rem;
+}
+
+/* Стили для настроек */
+.settings-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+}
+
+.setting-card {
+    background: var(--bg-light);
+    padding: 1.5rem;
+    border-radius: var(--border-radius);
+    border: 1px solid #e5e7eb;
+}
+
+.setting-card h3 {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--primary-color);
+    border-bottom: 2px solid #e5e7eb;
+    padding-bottom: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.setting-card h3 i {
+    font-size: 1.3rem;
+}
+
+.form-group {
+    margin-bottom: 1.2rem;
+}
+
+.form-group label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: var(--text-dark);
+    font-size: 0.95rem;
+}
+
+.form-group label i {
+    color: var(--primary-color);
+    width: 20px;
+}
+
+.form-input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 2px solid #e5e7eb;
+    border-radius: var(--border-radius);
+    font-size: 1rem;
+    transition: all 0.3s;
+    background: white;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+.form-input:disabled {
+    background: #f3f4f6;
+    cursor: not-allowed;
+    color: #6b7280;
+}
+
+.form-help {
+    display: block;
+    margin-top: 0.25rem;
+    font-size: 0.8rem;
+    color: #6b7280;
+}
+
+/* Стили для валидации email */
+.email-validation {
+    margin-top: 0.5rem;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.email-validation.valid {
+    color: #10b981;
+}
+
+.email-validation.invalid {
+    color: #ef4444;
+}
+
+.form-input.error {
+    border-color: #ef4444;
+    background-color: #fef2f2;
+}
+
+.form-input.valid {
+    border-color: #10b981;
+    background-color: #f0fdf4;
+}
+
+.error-message {
+    margin-bottom: 1rem;
+    padding: 0.75rem;
+    background: #fef2f2;
+    border-left: 3px solid #ef4444;
+    color: #991b1b;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    border-radius: 4px;
+}
+
+.error-message i {
+    color: #ef4444;
+    font-size: 1rem;
+}
+
+.btn-save {
+    width: 100%;
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 1rem;
+    border-radius: var(--border-radius);
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.btn-save:hover:not(:disabled) {
+    background: var(--primary-dark);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+}
+
+.btn-save:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Стили для статистики */
+.stats-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.stat-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem;
+    background: white;
+    border-radius: var(--border-radius);
+    transition: transform 0.3s;
+    border: 1px solid #e5e7eb;
+}
+
+.stat-item:hover {
+    transform: translateX(5px);
+    border-color: var(--primary-color);
+}
+
+.stat-label {
+    color: var(--text-dark);
+    font-weight: 500;
+}
+
+.stat-value-badge {
+    background: var(--primary-color);
+    color: white;
+    padding: 0.25rem 1rem;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+/* Информационный блок */
+.info-box {
+    background: #dbeafe;
+    border-left: 4px solid #3b82f6;
+    padding: 1rem;
+    border-radius: var(--border-radius);
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+}
+
+.info-box i {
+    color: #3b82f6;
+    font-size: 1.2rem;
+    margin-top: 0.2rem;
+}
+
+.info-box p {
+    color: #1e40af;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    margin: 0;
+}
+
+/* Опасная зона */
+.danger-zone {
+    margin-top: 2rem;
+    padding: 1.5rem;
+    background: #fef2f2;
+    border-radius: var(--border-radius);
+    border: 1px solid #fecaca;
+}
+
+.danger-zone h4 {
+    color: #dc2626;
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.danger-warning {
+    background: white;
+    border: 1px solid #fecaca;
+    border-radius: var(--border-radius);
+    padding: 1rem;
+    margin-bottom: 1rem;
+    color: #991b1b;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+.danger-warning i {
+    color: #dc2626;
+    font-size: 1.2rem;
+    margin-top: 0.2rem;
+}
+
+.btn-danger {
+    background: #dc2626;
+    color: white;
+    border: none;
+    padding: 1rem 1.5rem;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    width: 100%;
+}
+
+.btn-danger:hover {
+    background: #b91c1c;
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+}
+
+/* Модальные окна */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+    overflow-y: auto;
+}
+
+.modal-content {
+    background-color: white;
+    margin: 5% auto;
+    padding: 0;
+    border-radius: var(--border-radius);
+    width: 90%;
+    max-width: 500px;
+    box-shadow: var(--shadow-lg);
+    animation: modalFadeIn 0.3s;
+}
+
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.modal-header h3 {
+    margin: 0;
+    color: var(--text-dark);
+    font-size: 1.3rem;
+}
+
+.close {
+    color: #6b7280;
+    font-size: 1.5rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: color 0.3s;
+}
+
+.close:hover {
+    color: var(--text-dark);
+}
+
+.modal-form {
+    padding: 1.5rem;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+    margin-top: 1.5rem;
+}
+
+.delete-warning {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: var(--border-radius);
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    color: #dc2626;
+    font-size: 0.9rem;
+}
+
+.delete-warning ul {
+    margin: 0.5rem 0 0.5rem 1.5rem;
+    padding: 0;
+}
+
+.delete-warning li {
+    margin: 0.25rem 0;
+}
+
+.confirmation-label {
+    color: #dc2626;
+    font-weight: 600;
+    font-size: 0.9rem;
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+.btn-warning {
+    background: #f59e0b;
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    transition: background 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.btn-warning:hover:not(:disabled) {
+    background: #d97706;
+}
+
+.btn-warning:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Адаптация для мобильных */
+@media (max-width: 768px) {
+    .profile-header {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .profile-info {
+        flex-direction: column;
+        text-align: center;
+        align-items: center;
+    }
+    
+    .profile-stats {
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    
+    .profile-actions {
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    
+    .settings-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .tab-btn {
+        padding: 1rem;
+        font-size: 0.9rem;
+    }
+    
+    .books-grid, .history-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .history-card {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .history-cover {
+        margin: 0 auto;
+    }
+    
+    .book-actions {
+        flex-direction: column;
+    }
+    
+    .btn-details, .btn-finish {
+        width: 100%;
+    }
+    
+    .modal-content {
+        margin: 10% auto;
+        width: 95%;
+    }
+    
+    .admin-quick-links {
+        flex-direction: column;
+    }
+    
+    .stat-item {
+        flex-direction: column;
+        text-align: center;
+        gap: 0.5rem;
+    }
+    
+    .book-themes, .history-themes {
+        justify-content: center;
+    }
+}
+</style>
+
+<script>
+// Переключение вкладок
+document.addEventListener('DOMContentLoaded', function() {
+    const tabBtns = document.querySelectorAll('.tab-btn');
+    const tabPanes = document.querySelectorAll('.tab-pane');
+
+    tabBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const tabId = this.getAttribute('data-tab');
+            
+            tabBtns.forEach(b => b.classList.remove('active'));
+            tabPanes.forEach(p => p.classList.remove('active'));
+            
+            this.classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+        });
+    });
+
+    // Проверяем, есть ли hash в URL для открытия нужной вкладки
+    if (window.location.hash) {
+        const tabId = window.location.hash.substring(1);
+        const targetTab = document.querySelector(`[data-tab="${tabId}"]`);
+        if (targetTab) {
+            targetTab.click();
+        }
+    }
+
+    // Валидация email при загрузке
+    const emailInput = document.getElementById('email');
+    if (emailInput) {
+        validateEmail(emailInput);
+    }
+});
+
+// Функции для модальных окон
+function openEditModal() {
+    document.getElementById('editModal').style.display = 'block';
+}
+
+function closeEditModal() {
+    document.getElementById('editModal').style.display = 'none';
+}
+
+function showDeleteModal() {
+    document.getElementById('deleteModal').style.display = 'block';
+    document.getElementById('confirmation').value = '';
+    document.getElementById('deleteButton').disabled = true;
+}
+
+function closeDeleteModal() {
+    document.getElementById('deleteModal').style.display = 'none';
+}
+
+function showClearHistoryModal() {
+    document.getElementById('clearHistoryModal').style.display = 'block';
+    document.getElementById('history_confirmation').value = '';
+    document.getElementById('clearHistoryButton').disabled = true;
+}
+
+function closeClearHistoryModal() {
+    document.getElementById('clearHistoryModal').style.display = 'none';
+}
+
+// Проверка подтверждения для удаления аккаунта
+function checkConfirmation(input) {
+    const deleteButton = document.getElementById('deleteButton');
+    deleteButton.disabled = input.value !== 'УДАЛИТЬ АККАУНТ';
+}
+
+// Проверка подтверждения для очистки истории
+function checkHistoryConfirmation(input) {
+    const clearButton = document.getElementById('clearHistoryButton');
+    clearButton.disabled = input.value !== 'ОЧИСТИТЬ ИСТОРИЮ';
+}
+
+// Валидация email в реальном времени
+function validateEmail(input) {
+    const email = input.value;
+    const validationDiv = document.getElementById('emailValidation');
+    const saveBtn = document.getElementById('saveBtn');
+    
+    // Простая валидация формата email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    
+    if (!email) {
+        validationDiv.className = 'email-validation invalid';
+        validationDiv.innerHTML = '<i class="fas fa-exclamation-circle"></i> Email не может быть пустым';
+        input.classList.add('error');
+        input.classList.remove('valid');
+        if (saveBtn) saveBtn.disabled = true;
+    } else if (!emailRegex.test(email)) {
+        validationDiv.className = 'email-validation invalid';
+        validationDiv.innerHTML = '<i class="fas fa-exclamation-circle"></i> Введите корректный email';
+        input.classList.add('error');
+        input.classList.remove('valid');
+        if (saveBtn) saveBtn.disabled = true;
+    } else {
+        validationDiv.className = 'email-validation valid';
+        validationDiv.innerHTML = '<i class="fas fa-check-circle"></i> Email корректен';
+        input.classList.remove('error');
+        input.classList.add('valid');
+        if (saveBtn) saveBtn.disabled = false;
+    }
+}
+
+// Закрытие модальных окон при клике вне их
+window.onclick = function(event) {
+    const editModal = document.getElementById('editModal');
+    const deleteModal = document.getElementById('deleteModal');
+    const clearModal = document.getElementById('clearHistoryModal');
+    
+    if (event.target == editModal) closeEditModal();
+    if (event.target == deleteModal) closeDeleteModal();
+    if (event.target == clearModal) closeClearHistoryModal();
+}
+
+// Закрытие модальных окон при нажатии ESC
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        closeEditModal();
+        closeDeleteModal();
+        closeClearHistoryModal();
+    }
+});
+
+// Предотвращение повторной отправки формы
+document.addEventListener('DOMContentLoaded', function() {
+    const profileForm = document.getElementById('profileForm');
+    if (profileForm) {
+        profileForm.addEventListener('submit', function() {
+            const saveBtn = document.getElementById('saveBtn');
+            if (saveBtn && !saveBtn.disabled) {
+                saveBtn.disabled = true;
+                saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Сохранение...';
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

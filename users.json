@@ -1,0 +1,143 @@
+{
+  "admin": {
+    "email": "admin@school509.ru",
+    "password": "scrypt:32768:8:1$X9cLoIk2pWb8pHTy$703dac75fa392cfe26b4b08ef4280941a59394498db3d7bb3d68c834f33b532841be1c3b4672ba3c3404c85c32a3a0c44ed09a927a4d127f0a02eb6083be56ba",
+    "full_name": "Администратор Библиотеки",
+    "grade": "11",
+    "registered_at": "2025-11-15 18:49:11",
+    "borrowed_books": [],
+    "favorites": [
+      3,
+      4,
+      1
+    ],
+    "borrow_dates": {},
+    "reading_books": [
+      3
+    ],
+    "reading_dates": {
+      "3": "2026-02-22 19:37:45"
+    },
+    "reading_history": [],
+    "history_dates": {}
+  },
+  "Илья": {
+    "email": "gubkoilya502@gmail.com",
+    "password": "scrypt:32768:8:1$rLo37GNRoRh84vjK$f4ba229d44a92818e2dea5e447251ba77cffdb45ba0f39397b0e3488105e667261812ac5311a31a4b29d8ed03590c1f4ea1401b1cb9ba1956644156a4be9124d",
+    "full_name": "Илья",
+    "grade": "9",
+    "registered_at": "2025-11-15 18:50:30",
+    "borrowed_books": [],
+    "favorites": []
+  },
+  "clawcat502": {
+    "email": "gubkoilya502@gmail.com",
+    "password": "scrypt:32768:8:1$2YSJwoCKkhD6Ib38$b77e867fb6fb4cbadffc50a2b9fd1436ae723e19ea2f8b436587404298379990211b334f335a79077a57edb78cec0af62bc74afac325e9f0e5cdf3acc159d865",
+    "full_name": "Губко Илья Викторович",
+    "grade": "9",
+    "registered_at": "2026-01-17 22:08:34",
+    "borrowed_books": [],
+    "favorites": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "notifications": {
+      "new_books": true,
+      "return_reminders": true,
+      "recommendations": false
+    },
+    "borrow_dates": {}
+  },
+  "Ольга": {
+    "email": "p098916@school509.spb.ru",
+    "password": "scrypt:32768:8:1$DneEjw4mATPiLP2o$d059b18ad43dd1789308508090f55d003e4ff6776ac056575754400663f971d9dfabbf7b5e4a27bf7b682fffd46673e9fa0c21ba9522666fe25dbd393e9fed68",
+    "full_name": "Ольга Губко",
+    "grade": "4",
+    "registered_at": "2026-02-21 21:56:18",
+    "reading_books": [],
+    "reading_dates": {},
+    "reading_history": [
+      1,
+      3,
+      2,
+      4
+    ],
+    "history_dates": {
+      "1": "2026-02-21 22:08:39",
+      "3": "2026-02-21 22:06:06",
+      "2": "2026-02-21 22:06:12",
+      "4": "2026-02-21 22:06:14"
+    },
+    "favorites": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "notifications": {
+      "new_books": true,
+      "return_reminders": true,
+      "recommendations": false
+    }
+  },
+  "clawcat503": {
+    "email": "gubkoilya502@gmail.com",
+    "password": "scrypt:32768:8:1$Yj8BkaBlxf6IPmI6$22262207014bd88c6ad191f38c168255743b59cddf655e6caf6276a2b236da08022e28236a7d8b0cb888ec3485ccf99dfc45c06a556cad1762e12751f29033f6",
+    "full_name": "Губко Илья Викторович",
+    "grade": "9",
+    "registered_at": "2026-02-22 19:42:08",
+    "reading_books": [
+      4,
+      2
+    ],
+    "reading_dates": {
+      "4": "2026-02-22 19:46:08",
+      "2": "2026-02-22 19:47:06"
+    },
+    "reading_history": [
+      1,
+      3
+    ],
+    "history_dates": {
+      "1": "2026-02-22 19:49:25",
+      "3": "2026-02-22 19:47:56"
+    },
+    "favorites": [
+      1
+    ],
+    "notifications": {
+      "new_books": true,
+      "return_reminders": true,
+      "recommendations": true
+    }
+  },
+  "clawcat500": {
+    "email": "p097916@school509.spb.ru",
+    "password": "scrypt:32768:8:1$eZC7AYK1Y8YjiQO2$f6127a97f9f6b394d404398af0d6a68434c8c8e18c116e5dc24bee504a253ab4b16d45aee8cfb41ab79e5bd8e85d79fa33890c2fc96fee69a2b350fad38d75b1",
+    "full_name": "Илья Губко",
+    "grade": "5",
+    "registered_at": "2026-02-22 20:10:09",
+    "reading_books": [],
+    "reading_dates": {},
+    "reading_history": [
+      9,
+      1
+    ],
+    "history_dates": {
+      "9": "2026-02-28 20:46:43",
+      "1": "2026-02-28 20:47:07"
+    },
+    "favorites": [
+      2,
+      3,
+      4
+    ],
+    "notifications": {
+      "new_books": true,
+      "return_reminders": true,
+      "recommendations": false
+    }
+  }
+}

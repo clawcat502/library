@@ -1,0 +1,534 @@
+{% extends "base.html" %}
+
+{% block title %}Главная - Библиотека школы 509{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero">
+    <div class="hero-content">
+        <h1 class="hero-title animate-fade-in">Добро пожаловать в библиотеку школы 509</h1>
+        <p class="hero-subtitle animate-fade-in-delay">Откройте для себя мир знаний и приключений через книги</p>
+        
+        <!-- Search Form -->
+        <form action="{{ url_for('catalog') }}" method="GET" class="search-form animate-fade-in-delay-2">
+            <div class="search-container">
+                <input type="text" name="search" placeholder="Найти книгу или автора..." class="search-input">
+                <button type="submit" class="search-btn">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+        </form>
+        
+        <div class="hero-stats animate-fade-in-delay-3">
+            <div class="stat">
+                <span class="stat-number">{{ total_books }}+</span>
+                <span class="stat-label">Книг в каталоге</span>
+            </div>
+            <div class="stat">
+                <span class="stat-number">24/7</span>
+                <span class="stat-label">Доступ онлайн</span>
+            </div>
+            <div class="stat">
+                <span class="stat-number">100%</span>
+                <span class="stat-label">Бесплатно</span>
+            </div>
+        </div>
+    </div>
+    <div class="hero-background">
+        <div class="floating-books">
+            <div class="book book-1"><i class="fas fa-book"></i></div>
+            <div class="book book-2"><i class="fas fa-book"></i></div>
+            <div class="book book-3"><i class="fas fa-book"></i></div>
+            <div class="book book-4"><i class="fas fa-book"></i></div>
+        </div>
+    </div>
+</section>
+
+<!-- Featured Books -->
+<section class="featured-books">
+    <div class="container">
+        <h2 class="section-title">Рекомендуемые книги</h2>
+        <div class="books-grid">
+            {% for book in featured_books %}
+            <div class="book-card animate-slide-up">
+                <div class="book-cover">
+                    <i class="fas fa-book"></i>
+                </div>
+                <div class="book-info">
+                    <h3 class="book-title">{{ book.title }}</h3>
+                    <p class="book-author">{{ book.author }}</p>
+                    <div class="book-themes">
+                        <i class="fas fa-tags"></i>
+                        {% for theme in book.theme[:2] %}
+                            <span class="theme-tag">{{ theme }}</span>
+                        {% endfor %}
+                        {% if book.theme|length > 2 %}
+                            <span class="theme-tag">+{{ book.theme|length - 2 }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="book-availability {{ 'available' if book.available else 'not-available' }}">
+                        {{ 'Доступна' if book.available else 'На руках' }}
+                    </div>
+                    <a href="{{ url_for('book_detail', book_id=book.id) }}" class="btn-details">Подробнее</a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Features -->
+<section class="features">
+    <div class="container">
+        <h2 class="section-title">Почему выбирают нашу библиотеку?</h2>
+        <div class="features-grid">
+            <div class="feature-card animate-slide-up">
+                <div class="feature-icon">
+                    <i class="fas fa-search"></i>
+                </div>
+                <h3>Умный поиск</h3>
+                <p>Быстрый поиск по автору, названию и темам среди тысяч книг</p>
+            </div>
+            <div class="feature-card animate-slide-up">
+                <div class="feature-icon">
+                    <i class="fas fa-user-graduate"></i>
+                </div>
+                <h3>Для учащихся школы 509</h3>
+                <p>Специально подобранная литература по школьной программе</p>
+            </div>
+            <div class="feature-card animate-slide-up">
+                <div class="feature-icon">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <h3>Всегда доступно</h3>
+                <p>Онлайн каталог доступен 24/7 для учеников и преподавателей</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta">
+    <div class="container">
+        <div class="cta-content">
+            <h2>Начните читать сегодня!</h2>
+            <p>Присоединяйтесь к сообществу читателей школы 509</p>
+            {% if not user %}
+            <div class="cta-buttons">
+                <a href="{{ url_for('register') }}" class="btn-primary">Зарегистрироваться</a>
+                <a href="{{ url_for('catalog') }}" class="btn-secondary">Посмотреть каталог</a>
+            </div>
+            {% else %}
+            <div class="cta-buttons">
+                <a href="{{ url_for('catalog') }}" class="btn-primary">Искать книги</a>
+                <a href="{{ url_for('profile') }}" class="btn-secondary">Мой профиль</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<style>
+/* Стили для главной страницы */
+.hero {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    color: white;
+    padding: 4rem 2rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.hero-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    text-align: center;
+    position: relative;
+    z-index: 2;
+}
+
+.hero-title {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    font-weight: 700;
+}
+
+.hero-subtitle {
+    font-size: 1.25rem;
+    margin-bottom: 2rem;
+    opacity: 0.9;
+}
+
+.search-form {
+    max-width: 600px;
+    margin: 0 auto 3rem;
+}
+
+.search-container {
+    display: flex;
+    background: white;
+    border-radius: 50px;
+    padding: 0.5rem;
+    box-shadow: var(--shadow-lg);
+}
+
+.search-input {
+    flex: 1;
+    border: none;
+    outline: none;
+    padding: 1rem 1.5rem;
+    font-size: 1rem;
+    border-radius: 50px;
+}
+
+.search-btn {
+    background: var(--primary-color);
+    border: none;
+    color: white;
+    padding: 1rem 1.5rem;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.search-btn:hover {
+    background: var(--primary-dark);
+}
+
+.hero-stats {
+    display: flex;
+    justify-content: center;
+    gap: 3rem;
+}
+
+.stat {
+    text-align: center;
+}
+
+.stat-number {
+    display: block;
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    opacity: 0.8;
+}
+
+.floating-books {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+.book {
+    position: absolute;
+    font-size: 2rem;
+    color: rgba(255, 255, 255, 0.3);
+    animation: float 6s ease-in-out infinite;
+}
+
+.book-1 { top: 20%; left: 10%; animation-delay: 0s; }
+.book-2 { top: 60%; left: 80%; animation-delay: 1s; }
+.book-3 { top: 80%; left: 20%; animation-delay: 2s; }
+.book-4 { top: 40%; left: 90%; animation-delay: 3s; }
+
+@keyframes float {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-20px) rotate(5deg); }
+}
+
+.featured-books {
+    padding: 4rem 0;
+    background: white;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem;
+}
+
+.section-title {
+    text-align: center;
+    font-size: 2.5rem;
+    margin-bottom: 3rem;
+    color: var(--text-dark);
+}
+
+.books-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+    margin-bottom: 3rem;
+}
+
+.book-card {
+    background: var(--bg-light);
+    border-radius: var(--border-radius);
+    padding: 1.5rem;
+    box-shadow: var(--shadow);
+    transition: transform 0.3s, box-shadow 0.3s;
+    text-align: center;
+}
+
+.book-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
+}
+
+.book-cover {
+    font-size: 4rem;
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+}
+
+.book-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--text-dark);
+}
+
+.book-author {
+    color: var(--text-light);
+    margin-bottom: 0.5rem;
+}
+
+.book-themes {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    color: var(--text-light);
+    font-size: 0.9rem;
+    flex-wrap: wrap;
+}
+
+.theme-tag {
+    background: white;
+    color: var(--primary-color);
+    padding: 0.2rem 0.6rem;
+    border-radius: 15px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    border: 1px solid var(--primary-color);
+    white-space: nowrap;
+}
+
+.book-availability {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-bottom: 1rem;
+}
+
+.available {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.not-available {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.btn-details {
+    background: var(--primary-color);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: var(--border-radius);
+    text-decoration: none;
+    transition: background 0.3s;
+    display: inline-block;
+}
+
+.btn-details:hover {
+    background: var(--primary-dark);
+    color: white;
+}
+
+.features {
+    padding: 4rem 0;
+    background: white;
+}
+
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+}
+
+.feature-card {
+    text-align: center;
+    padding: 2rem;
+    background: var(--bg-light);
+    border-radius: var(--border-radius);
+    transition: transform 0.3s;
+}
+
+.feature-card:hover {
+    transform: translateY(-5px);
+}
+
+.feature-icon {
+    font-size: 3rem;
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+}
+
+.feature-card h3 {
+    margin-bottom: 1rem;
+    color: var(--text-dark);
+}
+
+.cta {
+    background: linear-gradient(135deg, var(--secondary-color), #059669);
+    color: white;
+    padding: 4rem 0;
+    text-align: center;
+}
+
+.cta-content h2 {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+}
+
+.cta-content p {
+    font-size: 1.25rem;
+    margin-bottom: 2rem;
+    opacity: 0.9;
+}
+
+.cta-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.btn-primary, .btn-secondary {
+    padding: 1rem 2rem;
+    border-radius: var(--border-radius);
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.3s;
+    display: inline-block;
+}
+
+.btn-primary {
+    background: white;
+    color: var(--secondary-color);
+}
+
+.btn-primary:hover {
+    background: var(--bg-light);
+    transform: translateY(-2px);
+}
+
+.btn-secondary {
+    background: transparent;
+    color: white;
+    border: 2px solid white;
+}
+
+.btn-secondary:hover {
+    background: white;
+    color: var(--secondary-color);
+    transform: translateY(-2px);
+}
+
+/* Анимации */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-fade-in {
+    animation: fadeIn 1s ease-out;
+}
+
+.animate-fade-in-delay {
+    animation: fadeIn 1s ease-out 0.3s both;
+}
+
+.animate-fade-in-delay-2 {
+    animation: fadeIn 1s ease-out 0.6s both;
+}
+
+.animate-fade-in-delay-3 {
+    animation: fadeIn 1s ease-out 0.9s both;
+}
+
+.animate-slide-up {
+    animation: slideUp 0.6s ease-out;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Адаптация для мобильных */
+@media (max-width: 768px) {
+    .hero-title {
+        font-size: 2rem;
+    }
+    
+    .hero-stats {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .cta-buttons {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .search-container {
+        flex-direction: column;
+        border-radius: var(--border-radius);
+    }
+    
+    .search-input {
+        border-radius: var(--border-radius) var(--border-radius) 0 0;
+    }
+    
+    .search-btn {
+        border-radius: 0 0 var(--border-radius) var(--border-radius);
+    }
+    
+    .books-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .book-themes {
+        gap: 0.3rem;
+    }
+    
+    .theme-tag {
+        font-size: 0.7rem;
+        padding: 0.15rem 0.4rem;
+    }
+}
+</style>
+{% endblock %}

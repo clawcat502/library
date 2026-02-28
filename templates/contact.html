@@ -1,0 +1,284 @@
+{% extends "base.html" %}
+
+{% block title %}Контакты - Школьная библиотека{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="contact-page">
+        <div class="contact-header">
+            <h1>Свяжитесь с нами</h1>
+            <p>Есть вопросы или предложения? Мы всегда рады помочь!</p>
+        </div>
+
+        <div class="contact-content">
+            <div class="contact-info">
+                <h2>Контактная информация</h2>
+                
+                <div class="contact-item">
+                    <div class="contact-icon">
+                        <i class="fas fa-map-marker-alt"></i>
+                    </div>
+                    <div class="contact-details">
+                        <h3>Адрес</h3>
+                        <p>​Патриотов проспект, 24</p>
+                        <p>3 этаж</p>
+                    </div>
+                </div>
+
+                <div class="contact-item">
+                    <div class="contact-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="contact-details">
+                        <h3>Часы работы</h3>
+                        <p>Понедельник - Пятница: 9:00 - 17:00</p>
+                        <p>Суббота: 10:00 - 14:00</p>
+                        <p>Воскресенье: выходной</p>
+                    </div>
+                </div>
+
+                <div class="contact-item">
+                    <div class="contact-icon">
+                        <i class="fas fa-phone"></i>
+                    </div>
+                    <div class="contact-details">
+                        <h3>Телефон</h3>
+                        <p>+7 (495) 123-45-67</p>
+                    </div>
+                </div>
+
+                <div class="contact-item">
+                    <div class="contact-icon">
+                        <i class="fas fa-envelope"></i>
+                    </div>
+                    <div class="contact-details">
+                        <h3>Email</h3>
+                        <p>library@school.ru</p>
+                    </div>
+                </div>
+
+                <div class="contact-item">
+                    <div class="contact-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="contact-details">
+                        <h3>Персонал</h3>
+                        <p><strong>Иванова М.П.</strong> - Заведующая библиотекой</p>
+                        <p><strong>Петров А.В.</strong> - Библиотекарь</p>
+                        <p><strong>Сидорова Е.И.</strong> - Педагог-библиотекарь</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="contact-form-container">
+                <h2>Форма обратной связи</h2>
+                <form method="POST" class="contact-form">
+                    <div class="form-group">
+                        <label for="name" class="form-label">Ваше имя *</label>
+                        <input type="text" id="name" name="name" class="form-input" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email" class="form-label">Email *</label>
+                        <input type="email" id="email" name="email" class="form-input" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="subject" class="form-label">Тема</label>
+                        <select id="subject" name="subject" class="form-input">
+                            <option value="">Выберите тему</option>
+                            <option value="question">Вопрос о книге</option>
+                            <option value="suggestion">Предложение</option>
+                            <option value="problem">Проблема с аккаунтом</option>
+                            <option value="other">Другое</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="message" class="form-label">Сообщение *</label>
+                        <textarea id="message" name="message" rows="6" class="form-input" required placeholder="Опишите ваш вопрос или предложение..."></textarea>
+                    </div>
+
+                    <button type="submit" class="btn-submit">Отправить сообщение</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="map-section">
+            <h2>Как нас найти</h2>
+            <div class="map-placeholder">
+                <i class="fas fa-map"></i>
+                <p>Карта расположения школьной библиотеки</p>
+                <p>Главный корпус, 2 этаж, кабинет 215</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.contact-page {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.contact-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.contact-header h1 {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    color: var(--text-dark);
+}
+
+.contact-header p {
+    font-size: 1.2rem;
+    color: var(--text-light);
+}
+
+.contact-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+    margin-bottom: 3rem;
+}
+
+.contact-info h2, .contact-form-container h2 {
+    margin-bottom: 2rem;
+    color: var(--text-dark);
+}
+
+.contact-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background: var(--bg-light);
+    border-radius: var(--border-radius);
+    transition: transform 0.3s;
+}
+
+.contact-item:hover {
+    transform: translateY(-2px);
+}
+
+.contact-icon {
+    width: 50px;
+    height: 50px;
+    background: var(--primary-color);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+
+.contact-details h3 {
+    margin-bottom: 0.5rem;
+    color: var(--text-dark);
+}
+
+.contact-details p {
+    margin: 0.25rem 0;
+    color: var(--text-light);
+}
+
+.contact-form {
+    background: white;
+    padding: 2rem;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: var(--text-dark);
+}
+
+.form-input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 2px solid #e5e7eb;
+    border-radius: var(--border-radius);
+    font-size: 1rem;
+    transition: border-color 0.3s;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+textarea.form-input {
+    resize: vertical;
+    min-height: 120px;
+}
+
+.btn-submit {
+    width: 100%;
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 1rem;
+    border-radius: var(--border-radius);
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.btn-submit:hover {
+    background: var(--primary-dark);
+}
+
+.map-section {
+    margin-top: 3rem;
+}
+
+.map-section h2 {
+    text-align: center;
+    margin-bottom: 2rem;
+    color: var(--text-dark);
+}
+
+.map-placeholder {
+    background: var(--bg-light);
+    padding: 4rem 2rem;
+    border-radius: var(--border-radius);
+    text-align: center;
+    color: var(--text-light);
+}
+
+.map-placeholder i {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    color: var(--primary-color);
+}
+
+@media (max-width: 768px) {
+    .contact-content {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+    }
+    
+    .contact-item {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .contact-icon {
+        align-self: center;
+    }
+}
+</style>
+{% endblock %}
